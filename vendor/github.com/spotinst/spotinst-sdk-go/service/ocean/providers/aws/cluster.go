@@ -105,6 +105,32 @@ type Task struct {
 type InstanceTypes struct {
 	Whitelist []string `json:"whitelist,omitempty"`
 	Blacklist []string `json:"blacklist,omitempty"`
+	Filters   *Filters `json:"filters,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Filters struct {
+	Architectures         []string `json:"architectures,omitempty"`
+	Categories            []string `json:"categories,omitempty"`
+	DiskTypes             []string `json:"diskTypes,omitempty"`
+	ExcludeFamilies       []string `json:"excludeFamilies,omitempty"`
+	ExcludeMetal          *bool    `json:"excludeMetal,omitempty"`
+	Hypervisor            []string `json:"hypervisor,omitempty"`
+	IncludeFamilies       []string `json:"includeFamilies,omitempty"`
+	IsEnaSupported        *bool    `json:"isEnaSupported,omitempty"`
+	MaxGpu                *int     `json:"maxGpu,omitempty"`
+	MaxMemoryGiB          *float64 `json:"maxMemoryGiB,omitempty"`
+	MaxNetworkPerformance *int     `json:"maxNetworkPerformance,omitempty"`
+	MaxVcpu               *int     `json:"maxVcpu,omitempty"`
+	MinEnis               *int     `json:"minEnis,omitempty"`
+	MinGpu                *int     `json:"minGpu,omitempty"`
+	MinMemoryGiB          *float64 `json:"minMemoryGiB,omitempty"`
+	MinNetworkPerformance *int     `json:"minNetworkPerformance,omitempty"`
+	MinVcpu               *int     `json:"minVcpu,omitempty"`
+	RootDeviceTypes       []string `json:"rootDeviceTypes,omitempty"`
+	VirtualizationTypes   []string `json:"virtualizationTypes,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -294,6 +320,7 @@ type RollSpec struct {
 	Status                       *string  `json:"status,omitempty"`
 	BatchSizePercentage          *int     `json:"batchSizePercentage,omitempty"`
 	BatchMinHealthyPercentage    *int     `json:"batchMinHealthyPercentage,omitempty"`
+	RespectPDB                   *bool    `json:"respectPdb,omitempty"`
 	DisableLaunchSpecAutoScaling *bool    `json:"disableLaunchSpecAutoScaling,omitempty"`
 	LaunchSpecIDs                []string `json:"launchSpecIds,omitempty"`
 	InstanceIDs                  []string `json:"instanceIds,omitempty"`
@@ -371,6 +398,126 @@ type GetLogEventsInput struct {
 
 type GetLogEventsOutput struct {
 	Events []*LogEvent `json:"events,omitempty"`
+}
+
+type ClusterAggregatedCostInput struct {
+	OceanId   *string           `json:"oceanId,omitempty"`
+	StartTime *string           `json:"startTime,omitempty"`
+	EndTime   *string           `json:"endTime,omitempty"`
+	GroupBy   *string           `json:"groupBy,omitempty"`
+	Filter    *AggregatedFilter `json:"filter,omitempty"`
+}
+
+type AggregatedFilter struct {
+	Scope      *string     `json:"scope,omitempty"`
+	Conditions *Conditions `json:"conditions,omitempty"`
+}
+
+type Conditions struct {
+	AnyMatch []*AllMatch `json:"anyMatch,omitempty"`
+}
+
+type AllMatch struct {
+	AllMatches []*AllMatchInner `json:"allMatch,omitempty"`
+}
+
+type AllMatchInner struct {
+	Type     *string `json:"type,omitempty"`
+	Key      *string `json:"key,omitempty"`
+	Operator *string `json:"operator,omitempty"`
+	Value    *string `json:"value,omitempty"`
+}
+
+type ClusterAggregatedCostOutput struct {
+	AggregatedClusterCosts []*AggregatedClusterCost `json:"aggregatedClusterCosts,omitempty"`
+}
+
+type AggregatedClusterCost struct {
+	Result *Result `json:"result,omitempty"`
+}
+
+type Result struct {
+	TotalForDuration *TotalForDuration `json:"totalForDuration,omitempty"`
+}
+
+type TotalForDuration struct {
+	Summary       *Summary       `json:"summary,omitempty"`
+	StartTime     *string        `json:"startTime,omitempty"`
+	EndTime       *string        `json:"endTime,omitempty"`
+	DetailedCosts *DetailedCosts `json:"detailedCosts,omitempty"`
+}
+
+type DetailedCosts struct {
+	Aggregations map[string]Property `json:"aggregations,omitempty"`
+	GroupedBy    *string             `json:"groupedBy,omitempty"`
+}
+
+type Property struct {
+	Resources []AggregatedCostResource `json:"resources,omitempty"`
+	Summary   *Summary                 `json:"summary,omitempty"`
+}
+
+type Summary struct {
+	Compute *AggregatedCompute `json:"compute,omitempty"`
+	Storage *AggregatedStorage `json:"storage,omitempty"`
+	Total   *float64           `json:"total,omitempty"`
+}
+
+type AggregatedCostResource struct {
+	Compute  *AggregatedCompute `json:"compute,omitempty"`
+	Storage  *AggregatedStorage `json:"storage,omitempty"`
+	MetaData *MetaData          `json:"metaData,omitempty"`
+	Total    *float64           `json:"total,omitempty"`
+}
+
+type AggregatedCompute struct {
+	Headroom  *Headroom  `json:"headroom,omitempty"`
+	Total     *float64   `json:"total,omitempty"`
+	Workloads *Workloads `json:"workloads,omitempty"`
+}
+
+type AggregatedStorage struct {
+	Block *Block   `json:"block,omitempty"`
+	File  *File    `json:"file,omitempty"`
+	Total *float64 `json:"total,omitempty"`
+}
+
+type MetaData struct {
+	Name       *string `json:"name,omitempty"`
+	Namespace  *string `json:"namespace,omitempty"`
+	Type       *string `json:"type,omitempty"`
+	CustomType *string `json:"customType,omitempty"`
+}
+
+type Headroom struct {
+	Total *float64 `json:"total,omitempty"`
+}
+
+type Workloads struct {
+	Total *float64 `json:"total,omitempty"`
+}
+
+type Block struct {
+	EbsPv *EbsPv   `json:"ebsPv,omitempty"`
+	NonPv *NonPv   `json:"nonPv,omitempty"`
+	Total *float64 `json:"total,omitempty"`
+}
+
+type File struct {
+	EfsPv *EfsPv   `json:"efsPv,omitempty"`
+	Total *float64 `json:"total,omitempty"`
+}
+
+type EbsPv struct {
+	Total *float64 `json:"total,omitempty"`
+}
+
+type NonPv struct {
+	Total *float64 `json:"total,omitempty"`
+}
+
+type EfsPv struct {
+	Total *float64 `json:"total,omitempty"`
 }
 
 func clusterFromJSON(in []byte) (*Cluster, error) {
@@ -511,6 +658,45 @@ func logEventsFromHttpResponse(resp *http.Response) ([]*LogEvent, error) {
 		return nil, err
 	}
 	return logEventsFromJSON(body)
+}
+
+func clusterAggregatedCostFromJSON(in []byte) (*AggregatedClusterCost, error) {
+	b := new(AggregatedClusterCost)
+	if err := json.Unmarshal(in, b); err != nil {
+		return nil, err
+	}
+
+	return b, nil
+}
+
+func clusterAggregatedCostsFromJSON(in []byte) ([]*AggregatedClusterCost, error) {
+	var rw client.Response
+	if err := json.Unmarshal(in, &rw); err != nil {
+		return nil, err
+	}
+	out := make([]*AggregatedClusterCost, len(rw.Response.Items))
+
+	if len(out) == 0 {
+		return out, nil
+	}
+	for i, rb := range rw.Response.Items {
+		b, err := clusterAggregatedCostFromJSON(rb)
+		if err != nil {
+			return nil, err
+		}
+		out[i] = b
+	}
+
+	return out, nil
+}
+
+func clusterAggregatedCostsFromHttpResponse(resp *http.Response) ([]*AggregatedClusterCost, error) {
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return clusterAggregatedCostsFromJSON(body)
 }
 
 func (s *ServiceOp) ListClusters(ctx context.Context, input *ListClustersInput) (*ListClustersOutput, error) {
@@ -835,6 +1021,35 @@ func (s *ServiceOp) Roll(ctx context.Context, input *RollClusterInput) (*RollClu
 	return output, nil
 }
 
+func (s *ServiceOp) GetClusterAggregatedCosts(ctx context.Context, input *ClusterAggregatedCostInput) (*ClusterAggregatedCostOutput, error) {
+	path, err := uritemplates.Expand("/ocean/aws/k8s/cluster/{oceanId}/aggregatedCosts", uritemplates.Values{
+		"oceanId": spotinst.StringValue(input.OceanId),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// We do not need the ID anymore so let's drop it.
+	input.OceanId = nil
+
+	r := client.NewRequest(http.MethodPost, path)
+
+	r.Obj = input
+
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	costs, err := clusterAggregatedCostsFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ClusterAggregatedCostOutput{costs}, nil
+}
+
 // region Cluster
 
 func (o Cluster) MarshalJSON() ([]byte, error) {
@@ -1126,6 +1341,13 @@ func (o *InstanceTypes) SetWhitelist(v []string) *InstanceTypes {
 func (o *InstanceTypes) SetBlacklist(v []string) *InstanceTypes {
 	if o.Blacklist = v; o.Blacklist == nil {
 		o.nullFields = append(o.nullFields, "Blacklist")
+	}
+	return o
+}
+
+func (o *InstanceTypes) SetFilters(v *Filters) *InstanceTypes {
+	if o.Filters = v; o.Filters == nil {
+		o.nullFields = append(o.nullFields, "Filters")
 	}
 	return o
 }
@@ -1522,6 +1744,13 @@ func (o *RollSpec) SetBatchMinHealthyPercentage(v *int) *RollSpec {
 	return o
 }
 
+func (o *RollSpec) SetRespectPDB(v *bool) *RollSpec {
+	if o.RespectPDB = v; o.RespectPDB == nil {
+		o.nullFields = append(o.nullFields, "RespectPDB")
+	}
+	return o
+}
+
 func (o *RollSpec) SetDisableLaunchSpecAutoScaling(v *bool) *RollSpec {
 	if o.DisableLaunchSpecAutoScaling = v; o.DisableLaunchSpecAutoScaling == nil {
 		o.nullFields = append(o.nullFields, "DisableLaunchSpecAutoScaling")
@@ -1619,3 +1848,144 @@ func (o *S3) SetId(v *string) *S3 {
 }
 
 // endregion
+
+// region Filters
+
+func (o Filters) MarshalJSON() ([]byte, error) {
+	type noMethod Filters
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Filters) SetArchitectures(v []string) *Filters {
+	if o.Architectures = v; o.Architectures == nil {
+		o.nullFields = append(o.nullFields, "Architectures")
+	}
+	return o
+}
+
+func (o *Filters) SetCategories(v []string) *Filters {
+	if o.Categories = v; o.Categories == nil {
+		o.nullFields = append(o.nullFields, "Categories")
+	}
+	return o
+}
+
+func (o *Filters) SetDiskTypes(v []string) *Filters {
+	if o.DiskTypes = v; o.DiskTypes == nil {
+		o.nullFields = append(o.nullFields, "DiskTypes")
+	}
+	return o
+}
+
+func (o *Filters) SetExcludeFamilies(v []string) *Filters {
+	if o.ExcludeFamilies = v; o.ExcludeFamilies == nil {
+		o.nullFields = append(o.nullFields, "ExcludeFamilies")
+	}
+	return o
+}
+
+func (o *Filters) SetExcludeMetal(v *bool) *Filters {
+	if o.ExcludeMetal = v; o.ExcludeMetal == nil {
+		o.nullFields = append(o.nullFields, "ExcludeMetal")
+	}
+	return o
+}
+
+func (o *Filters) SetHypervisor(v []string) *Filters {
+	if o.Hypervisor = v; o.Hypervisor == nil {
+		o.nullFields = append(o.nullFields, "Hypervisor")
+	}
+	return o
+}
+
+func (o *Filters) SetIncludeFamilies(v []string) *Filters {
+	if o.IncludeFamilies = v; o.IncludeFamilies == nil {
+		o.nullFields = append(o.nullFields, "IncludeFamilies")
+	}
+	return o
+}
+
+func (o *Filters) SetIsEnaSupported(v *bool) *Filters {
+	if o.IsEnaSupported = v; o.IsEnaSupported == nil {
+		o.nullFields = append(o.nullFields, "IsEnaSupported")
+	}
+	return o
+}
+
+func (o *Filters) SetMaxGpu(v *int) *Filters {
+	if o.MaxGpu = v; o.MaxGpu == nil {
+		o.nullFields = append(o.nullFields, "MaxGpu")
+	}
+	return o
+}
+
+func (o *Filters) SetMaxMemoryGiB(v *float64) *Filters {
+	if o.MaxMemoryGiB = v; o.MaxMemoryGiB == nil {
+		o.nullFields = append(o.nullFields, "MaxMemoryGiB")
+	}
+	return o
+}
+
+func (o *Filters) SetMaxNetworkPerformance(v *int) *Filters {
+	if o.MaxNetworkPerformance = v; o.MaxNetworkPerformance == nil {
+		o.nullFields = append(o.nullFields, "MaxNetworkPerformance")
+	}
+	return o
+}
+
+func (o *Filters) SetMaxVcpu(v *int) *Filters {
+	if o.MaxVcpu = v; o.MaxVcpu == nil {
+		o.nullFields = append(o.nullFields, "MaxVcpu")
+	}
+	return o
+}
+
+func (o *Filters) SetMinEnis(v *int) *Filters {
+	if o.MinEnis = v; o.MinEnis == nil {
+		o.nullFields = append(o.nullFields, "MinEnis")
+	}
+	return o
+}
+
+func (o *Filters) SetMinGpu(v *int) *Filters {
+	if o.MinGpu = v; o.MinGpu == nil {
+		o.nullFields = append(o.nullFields, "MinGpu")
+	}
+	return o
+}
+
+func (o *Filters) SetMinMemoryGiB(v *float64) *Filters {
+	if o.MinMemoryGiB = v; o.MinMemoryGiB == nil {
+		o.nullFields = append(o.nullFields, "MinMemoryGiB")
+	}
+	return o
+}
+
+func (o *Filters) SetMinNetworkPerformance(v *int) *Filters {
+	if o.MinNetworkPerformance = v; o.MinNetworkPerformance == nil {
+		o.nullFields = append(o.nullFields, "MinNetworkPerformance")
+	}
+	return o
+}
+
+func (o *Filters) SetMinVcpu(v *int) *Filters {
+	if o.MinVcpu = v; o.MinVcpu == nil {
+		o.nullFields = append(o.nullFields, "MinVcpu")
+	}
+	return o
+}
+
+func (o *Filters) SetRootDeviceTypes(v []string) *Filters {
+	if o.RootDeviceTypes = v; o.RootDeviceTypes == nil {
+		o.nullFields = append(o.nullFields, "RootDeviceTypes")
+	}
+	return o
+}
+
+func (o *Filters) SetVirtualizationTypes(v []string) *Filters {
+	if o.VirtualizationTypes = v; o.VirtualizationTypes == nil {
+		o.nullFields = append(o.nullFields, "VirtualizationTypes")
+	}
+	return o
+}
